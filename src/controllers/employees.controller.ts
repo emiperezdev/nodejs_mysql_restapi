@@ -4,7 +4,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import CreateEmployeeDTO from "../dtos/employee.dto";
 
 export const getEmployees = async (req: Request, res: Response) => {
-  const [rows] = await pool.query("SELECT * FROM employee");
+  const [rows] = await pool.query<ResultSetHeader>("SELECT * FROM employee");
   res.json(rows);
 };
 
@@ -32,8 +32,23 @@ export const createEmployee = async (req: Request, res: Response) => {
   });
 };
 
-export const updateEmployee = (req: Request, res: Response) => {
-  res.send("update employees");
+export const updateEmployee = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { name, salary } = req.body as CreateEmployeeDTO;
+
+  const [result] = await pool.query<ResultSetHeader>(
+    "UPDATE employee SET name = IFNULL(?, name), salary = IFNULL(?, salary) WHERE id = ?",
+    [name, salary, id]
+  );
+
+  if (!result.affectedRows) return noEmployeeInDB(res);
+
+  const [updatedEmployee] = await pool.query<RowDataPacket[]>(
+    "SELECT * FROM employee WHERE id = ?",
+    [id]
+  );
+  
+  res.json(updatedEmployee[0]);
 };
 
 export const deleteEmployee = async (req: Request, res: Response) => {
@@ -48,5 +63,5 @@ export const deleteEmployee = async (req: Request, res: Response) => {
 };
 
 const noEmployeeInDB = (res: Response) => {
-  return res.status(404).send('Employee not found');
-}
+  return res.status(404).send("Employee not found");
+};
