@@ -1,15 +1,19 @@
 import { Request, Response } from "express";
 import pool from "../start/db";
-import CreateEmployeeDTO from "../schemas/employee.schema";
 import { ResultSetHeader } from "mysql2";
+import CreateEmployeeDTO from "../dtos/employee.dto";
 
 export const getEmployees = async (req: Request, res: Response) => {
-  const [result] = await pool.query('SELECT "pong"');
-  res.json(result);
+  const [rows] = await pool.query('SELECT * FROM employee');
+  res.json(rows);
 };
 
-export const getEmployee = (req: Request, res: Response) => {
-  res.send("get one employee");
+export const getEmployee = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const [rows] = await pool.query(`SELECT * FROM employee WHERE id = ${id}`);
+  if (!rows) res.status(400).send('Invalid id');
+
+  res.json(rows);
 };
 
 export const createEmployee = async (req: Request, res: Response) => {
