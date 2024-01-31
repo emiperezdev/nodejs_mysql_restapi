@@ -13,7 +13,7 @@ export const getEmployee = async (req: Request, res: Response) => {
     `SELECT * FROM employee WHERE id = ?`,
     [req.params.id]
   );
-  if (!rows[0]) res.status(404).send("Invalid id");
+  if (!rows[0]) return noEmployeeInDB(res);
 
   res.json(rows[0]);
 };
@@ -36,6 +36,17 @@ export const updateEmployee = (req: Request, res: Response) => {
   res.send("update employees");
 };
 
-export const deleteEmployee = (req: Request, res: Response) => {
-  res.send("delete employees");
+export const deleteEmployee = async (req: Request, res: Response) => {
+  const [result] = await pool.query<ResultSetHeader>(
+    "DELETE FROM employee WHERE id = ?",
+    [req.params.id]
+  );
+
+  if (!result.affectedRows) return noEmployeeInDB(res);
+
+  res.sendStatus(204);
 };
+
+const noEmployeeInDB = (res: Response) => {
+  return res.status(404).send('Employee not found');
+}
