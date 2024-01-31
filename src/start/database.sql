@@ -9,4 +9,10 @@ CREATE TABLE employee (
   PRIMARY KEY(id)
 );
 
+INSERT INTO employee (name, salary)
+VALUES 
+  ('Joe', '15000'),
+  ('Mosh', '70000'),
+  ('Max', '5000');
+  
 DESCRIBE employee;
